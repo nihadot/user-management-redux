@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { checkUserLoggedIn, login, signInFailure, signInStart, signInSuccess } from '../../redux/slices/authSlice'; // Adjust if using Redux
-import { loginUser } from '../../services/api';
+import { checkUserLoggedIn, login, signInFailure, signInStart, signInSuccess, signUpFailure, signUpStart } from '../../redux/slices/authSlice'; // Adjust if using Redux
+import { loginUser, signupUser } from '../../services/api';
 import { errorToast, successToast } from '../../components/Toast';
 import { Navigate, useNavigate } from 'react-router';
 
@@ -23,7 +23,7 @@ const loginSchema = Yup.object().shape({
     .required("Email is required")
 });
 
-function LoginPage() {
+function SignUpPage() {
   const [isHovered, setIsHovered] = useState(false);
   const dispatch = useDispatch();
   const { loading, error: authError, isAuthenticated } = useSelector((state) => state.auth);
@@ -31,15 +31,14 @@ function LoginPage() {
 
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      dispatch(signInStart());
-      const response = await loginUser(values);
+      dispatch(signUpStart());
+      const response = await signupUser(values);
       await dispatch(signInSuccess(response.data))
       successToast('Logged In Successfully');
-
-      navigate('/')
+      navigate('/admin')
     } catch (error) {
-      dispatch(signInFailure(data.message));
-      errorToast(error.message || 'Login failed. Please try again.');
+      dispatch(signUpFailure(error?.response?.data?.message || error.message));
+      errorToast(error?.response?.data?.message || error.message || 'Login failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -67,7 +66,6 @@ function LoginPage() {
           Sign In
         </h2>
 
-        {console.log(isAuthenticated,'2')}
 
         <Formik
           initialValues={{ email: 'emali@gmail.com', password: 'Nihad@123' }}
@@ -76,6 +74,30 @@ function LoginPage() {
         >
           {({ isSubmitting }) => (
             <Form>
+
+
+<div className="mb-6">
+                <label
+                  htmlFor="name"
+                  className="block text-gray-300 text-sm font-medium mb-2 transition-colors duration-200 hover:text-white"
+                >
+                  Name
+                </label>
+                <Field
+                  type="name"
+                  name="name"
+                  className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300"
+                  placeholder="Name"
+                  disabled={isSubmitting || loading}
+                />
+                <ErrorMessage
+                  name="name"
+                  component="span"
+                  className="text-red-500 text-sm mt-1"
+                />
+              </div>
+
+
               <div className="mb-6">
                 <label
                   htmlFor="email"
@@ -147,4 +169,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default SignUpPage;

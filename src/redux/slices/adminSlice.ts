@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { adminLogin, checkAdminAuth } from '../../services/adminApi';
 
-// Async thunk for login
 export const login = createAsyncThunk(
   'admin/login',
   async (credentials, { rejectWithValue }) => {
@@ -15,28 +14,51 @@ export const login = createAsyncThunk(
 );
 
 export const checkLoggedIn = createAsyncThunk(
-    'admin/checkAdminLoggedIn',
-    async (_, { rejectWithValue }) => {
-      try {
-        const response = await checkAdminAuth();
-        return response.data;
-      } catch (error) {
-        return rejectWithValue(error.response?.data || 'Authentication check failed');
-      }
+  'admin/checkAdminLoggedIn',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await checkAdminAuth();
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Authentication check failed');
     }
-  );
+  }
+);
 
 const adminSlice = createSlice({
   name: 'admin',
   initialState: {
     user: null,
-    isAuthenticated: false,
+    isAuthenticated:  !!localStorage.getItem("adminToken"),
     loading: false,
     error: null,
+    logoutLoading:false,
   },
   reducers: {
-    logout: (state) => {
-      state.user = null;
+    signInStart: (state) => {
+      state.loading = true;
+    },
+    signInSuccess: (state, action) => {
+      console.log(action.payload,'----payload')
+      localStorage.setItem('adminToken', action.payload.accessToken)
+      state.loading = false;
+      state.error = null;
+      state.isAuthenticated = true;
+    },
+    signInFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    logoutStart: (state) => {
+      state.logoutLoading = true;
+    },
+    logoutSuccess: (state) => {
+      state.logoutLoading = true;
+      localStorage.removeItem('adminToken');
+    },
+    logoutFailure: (state) => {
+      state.loading = false;
+      state.error = null;
       state.isAuthenticated = false;
     },
   },
@@ -72,5 +94,12 @@ const adminSlice = createSlice({
   },
 });
 
-export const { logout } = adminSlice.actions;
+export const { logout
+,signInFailure,signInStart,
+signInSuccess,
+logoutFailure,
+logoutStart,
+logoutSuccess,
+
+ } = adminSlice.actions;
 export default adminSlice.reducer;

@@ -6,6 +6,8 @@ import { checkLoggedIn, login } from '../../redux/slices/adminSlice'; // Adjust 
 import { loginUser } from '../../services/api';
 import { errorToast, successToast } from '../../components/Toast';
 import { Navigate, useNavigate } from 'react-router';
+import { signInFailure, signInStart, signInSuccess } from '../../redux/slices/adminSlice';
+import { adminLogin } from '../../services/adminApi';
 
 // Validation schema with Yup
 const loginSchema = Yup.object().shape({
@@ -36,10 +38,19 @@ function LoginPage() {
 
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
-      const response = await dispatch(login(values)).unwrap(); // Use unwrap() to handle errors properly
+            dispatch(signInStart());
+      
+      // const response = await dispatch(login(values))
+          const response = await adminLogin(values);
+          console.log('first')
+console.log(response.accessToken,'response.data')
+            await dispatch(signInSuccess(response))
       successToast('Logged In Successfully');
+      navigate('/admin')
     } catch (error) {
       console.error('Login error:', error);
+      dispatch(signInFailure(error?.message));
+
       errorToast(error.message || 'Login failed. Please try again.');
       navigate('/admin');
     } finally {

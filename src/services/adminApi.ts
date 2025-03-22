@@ -1,8 +1,10 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+const apiUrl = import.meta.env.VITE_APP_API_URL
+
 const api = axios.create({
-  baseURL: 'http://localhost:4000/api/v1/',
+  baseURL: apiUrl,
   withCredentials: true, // Allow sending cookies with requests
 });
 
@@ -26,8 +28,8 @@ api.interceptors.response.use(
 
       } catch (refreshError) {
         // If refresh fails, clear cookies and redirect to login
-        Cookies.remove('accessToken');
-        Cookies.remove('refreshToken');
+        // Cookies.remove('accessToken');
+        // Cookies.remove('refreshToken');
         window.location.href = '/admin-login';
         return Promise.reject(refreshError);
       }
@@ -46,6 +48,11 @@ export const adminLogin = async (credentials) => {
 export const checkAdminAuth = async () => {
     const response = await api.post('http://localhost:4000/api/v1/auth/admin/refresh-token'); // Replace with your endpoint
     return response;
+};
+
+export const logoutAdmin = async () => {
+  const response = await api.post(`${apiUrl}auth/admin/logout`);
+  return response;
 };
 
 export default api;

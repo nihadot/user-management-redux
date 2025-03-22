@@ -4,6 +4,8 @@ import clsx from "clsx";
 import { useLocation, useNavigate } from "react-router";
 import { JSX, useState } from "react";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { logoutStart, logoutSuccess, signInFailure, signInStart, signInSuccess } from "../../redux/slices/adminSlice";
 
 type MenuItem = {
     id: number;
@@ -17,13 +19,14 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
     { id: 1, link: "/admin/manage-users", name: "Manage Users", icon: <FaRProject /> },
     { id: 2, link: "/profile", name: "Profile", icon: <FaMeteor /> },
-   
+
 ];
 
 const Menus = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+    const dispatch = useDispatch();
 
     const handleToggle = (id: number) => {
         setOpenDropdown(openDropdown === id ? null : id);
@@ -34,9 +37,15 @@ const Menus = () => {
 
     const handleLogout = async () => {
         try {
-            await logout().unwrap(); // ✅ Calls API and handles errors
+
+            dispatch(logoutStart());
+
+            dispatch(logoutSuccess());
+
             navigate("/login"); // ✅ Redirect after successful logout
         } catch (error) {
+            dispatch(signInFailure(data.message));
+
             console.error("Logout failed:", error);
         }
     };

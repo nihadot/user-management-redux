@@ -1,11 +1,51 @@
-import React from 'react'
+import { useState } from "react";
+import { Breadcrumb } from "../../components/Breadcrumb";
+import ActionCard, { Icons } from "../../components/ActionCard/ActionCard";
 
 type Props = {}
 
-function ManageUsers({}: Props) {
-  return (
-    <div>ManageUsers</div>
-  )
+
+type Item = {
+    label: string,
+    link: string,
+    icon: Icons
 }
 
-export default ManageUsers
+function index({ }: Props) {
+
+
+    const data: Item[] = [
+        {
+            icon: 'add-icon',
+            label: 'Add User',
+            link: '/admin/users/add'
+        },
+        {
+            icon: 'view-icon',
+            label: 'Manage Users',
+            link: '/admin/users/list'
+        },
+        ]
+
+
+    const [breadcrumbs] = useState([
+        { link: "/dashboard", title: "Home" },
+        { link: "/manage-ads", title: "Manage Ads" },
+    ]);
+
+    return (
+        <div className='p-2 md:p-4 '>
+            <Breadcrumb items={breadcrumbs} />
+            <p className='text-lg text-[#141824] mt-4 pb-4 font-medium '>Manage Ads</p>
+
+            <div className="grid grid-cols-4 gap-4">
+
+                {data.map((item: Item) => (
+                    <ActionCard key={item.label} {...item} />
+                ))}
+            </div>
+        </div>
+    )
+}
+
+export default index

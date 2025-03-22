@@ -1,20 +1,32 @@
-import { Navigate, Outlet } from 'react-router';
+import { Navigate, Outlet, useNavigate } from 'react-router';
 import { SideBar } from '../../components';
 import { useProtectRouteQuery } from '../../features/auth/authApi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { checkUserLoggedIn } from '../../redux/slices/authSlice';
+import { RootState } from '../../redux/store';
 
 type Props = {};
 
 function AdminLayout({}: Props) {
-    const  { isAuthenticated:data } = useSelector((item)=>  item.admin)
 
     
+        const { isAuthenticated, loading } = useSelector((state: RootState) => state.admin);
+        const navigate = useNavigate();
+    
  
+     useEffect(() => {
+        console.log(isAuthenticated,'isAuthenticatedisAuthenticatedisAuthenticated')
+        
+                if (!isAuthenticated) {
+                    navigate('/admin-login'); // Redirect to login if not authenticated
+                }
+        
+        }, [isAuthenticated, loading, navigate]);
+    
     return (
         <>
-            {data?.success ? (
+           
                 <main className="flex min-h-screen max-w-[1440px] w-full">
                     <SideBar />
 
@@ -22,9 +34,7 @@ function AdminLayout({}: Props) {
                         <Outlet />
                     </div>
                 </main>
-            ) : (
-                <Navigate to="/login" />
-            )}
+           
         </>
     );
 }

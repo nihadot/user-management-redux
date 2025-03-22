@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { checkAuth, loginUser } from '../../services/api';
 
-// Async thunk for login
+
 export const login = createAsyncThunk(
   'auth/login',
   async (credentials, { rejectWithValue }) => {
@@ -14,33 +14,78 @@ export const login = createAsyncThunk(
   }
 );
 
-
-
 export const checkUserLoggedIn = createAsyncThunk(
-    'auth/checkUserLoggedIn',
-    async (_, { rejectWithValue }) => {
-      try {
-        const response = await checkAuth();
-        return response.data;
-      } catch (error) {
-        return rejectWithValue(error.response?.data || 'Authentication check failed');
-      }
+  'auth/checkUserLoggedIn',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await checkAuth();
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Authentication check failed');
     }
-  );
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
     user: null,
-    isAuthenticated: false,
+    isAuthenticated: !!localStorage.getItem("userToken"),
     loading: false,
     error: null,
+    signUpLoading:false,
+    signupFailure:false,
+    signupError:null,
+    logoutLoading:true,
   },
   reducers: {
-    logout: (state) => {
-      state.user = null;
+    signInStart: (state) => {
+      state.loading = true;
+    },
+    signInSuccess: (state, action) => {
+      localStorage.setItem('userToken', action.payload.accessToken)
+      state.loading = false;
+      state.error = null;
+      state.isAuthenticated = true;
+    },
+    signUpFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
+    signUpStart: (state) => {
+      state.signUpLoading = true;
+    },
+    signUpSuccess: (state, action) => {
+      state.signUpLoading = false;
+      state.signupError = null;
+
+    },
+    signInFailure: (state, action) => {
+      state.signupFailure = false;
+      state.error = action.payload;
+    },
+    adminLogin: (state, action) => {
+      state.user = action.payload.data;
+      state.isAuthenticated = !!action.payload.data;
+      state.error = null;
+
+    },
+    logoutStart: (state) => {
+      state.logoutLoading = true;
+    },
+    logoutSuccess: (state) => {
+      state.logoutLoading = true;
+    },
+    logoutFailure: (state) => {
+      localStorage.removeItem('userToken')
+      state.loading = false;
+      state.error = null;
       state.isAuthenticated = false;
     },
+    protectRoute: (state, action) => {
+      console.log(action, 'action')
+      // state.isAuthenticated = true;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -74,5 +119,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { signInStart,logoutStart,logoutSuccess,logoutFailure, signInFailure, signInSuccess,signUpFailure,signUpStart,signUpSuccess } = authSlice.actions;
 export default authSlice.reducer;
+
