@@ -1,0 +1,11 @@
+export { default as agents } from "./agents.webp";
+export { default as blog } from "./blog.webp";
+export { default as city } from "./city.webp";
+export { default as developers } from "./dasboard-employees.webp";
+export { default as dashboardLeads } from "./dashboard-leads.webp";
+export { default as dashboardProjects } from "./dashboard-projects.webp";
+export { default as leads } from "./leads.webp";
+export { default as logo } from "./logo.webp";
+export { default as projects } from "./project.webp";
+export { default as search } from "./search.webp";
+export { default as sidebar } from "./sidebar.webp";
