@@ -1,25 +1,32 @@
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router';
-import { RootState } from '../../redux/store';
+import { useDispatch } from 'react-redux';
+import { Outlet, useNavigate } from 'react-router';
+import { isLoggedAPIUser } from '../../services/userApi';
+import { protectedRouteFailure, protectedRouteStart, protectedRouteSuccess } from '../../redux/slices/userSlice';
 
 const UserLayout: React.FC = () => {
-    const { isAuthenticated, loading } = useSelector((state: RootState) => state.auth);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        if (!loading) {
-            if (isAuthenticated) {
-                navigate('/'); // Redirect to home if authenticated
-            } else {
-                navigate('/login'); // Redirect to login if not authenticated
-            }
+
+        isLogged()
+
+    }, []);
+    
+    const isLogged = async () => {
+        dispatch(protectedRouteStart())
+        try {
+            await isLoggedAPIUser();
+            dispatch(protectedRouteSuccess())
+        } catch (error: any) {
+            dispatch(protectedRouteFailure(error))
+            navigate('/login');
         }
-    }, [isAuthenticated, loading, navigate]);
+    }
 
-    if (loading) return <div>Loading...</div>;
 
-    return <div>UserLayout</div>;
+    return <Outlet/>;
 };
 
 export default UserLayout;

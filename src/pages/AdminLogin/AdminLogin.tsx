@@ -1,23 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { checkLoggedIn, login } from '../../redux/slices/adminSlice'; // Adjust if using Redux
-import { loginUser } from '../../services/api';
 import { errorToast, successToast } from '../../components/Toast';
-import { Navigate, useNavigate } from 'react-router';
-import { signInFailure, signInStart, signInSuccess } from '../../redux/slices/adminSlice';
-import { adminLogin } from '../../services/adminApi';
+import { useNavigate } from 'react-router';
+import { protectedRouteFailure, protectedRouteStart, protectedRouteSuccess, signInFailure, signInStart, signInSuccess } from '../../redux/slices/adminSlice';
+import { adminLogin, isLoggedAPIAdmin } from '../../services/adminApi';
+import { RootState } from '../../redux/store';
 
-// Validation schema with Yup
 const loginSchema = Yup.object().shape({
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long.")
     .max(30, "Password must be at most 30 characters long.")
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
-      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character."
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$#!%*?&]{8,30}$/,
+      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)."
     )
-    .required("Password is required."),
+    .required("Password is required"),
   email: Yup.string()
     .email("Invalid email format")
     .trim()
@@ -25,41 +24,65 @@ const loginSchema = Yup.object().shape({
     .required("Email is required")
 });
 
-
-
-
-
 function LoginPage() {
   const [isHovered, setIsHovered] = useState(false);
   const dispatch = useDispatch();
-  const { loading, error: authError, isAuthenticated } = useSelector((state) => state.auth);
+  const { signInLoading, isAuthenticated } = useSelector((state: RootState) => state.admin);
   const navigate = useNavigate();
 
-
-  const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
+  const handleSubmit = async (values: any, { setSubmitting }: { setSubmitting: any }) => {
     try {
-            dispatch(signInStart());
-      
-      // const response = await dispatch(login(values))
-          const response = await adminLogin(values);
-          console.log('first')
-console.log(response.accessToken,'response.data')
-            await dispatch(signInSuccess(response))
+      dispatch(signInStart());
+
+      const response = await adminLogin(values);
+
+      dispatch(signInSuccess(response))
+
       successToast('Logged In Successfully');
+
       navigate('/admin')
-    } catch (error) {
-      console.error('Login error:', error);
+
+    } catch (error: any) {
+
+      errorToast(error?.response?.data?.message || error.message || 'Error occurred, please try again later');
+
       dispatch(signInFailure(error?.message));
 
-      errorToast(error.message || 'Login failed. Please try again.');
       navigate('/admin');
+
     } finally {
+
       setSubmitting(false);
+
     }
   };
 
+  const isLogged = async () => {
 
+    dispatch(protectedRouteStart())
 
+    try {
+      await isLoggedAPIAdmin();
+
+      dispatch(protectedRouteSuccess())
+
+    } catch (error: any) {
+
+      dispatch(protectedRouteFailure(error))
+
+    }
+  }
+
+  useEffect(() => {
+    isLogged()
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin');
+    }
+
+  }, [isAuthenticated, navigate]);
 
 
   return (
@@ -70,7 +93,7 @@ console.log(response.accessToken,'response.data')
         </h2>
 
         <Formik
-          initialValues={{ email: 'emali@gmail.com', password: 'Nihad@123' }}
+          initialValues={{ email: 'exaasmple@gmail.com', password: 'Nihad@123#' }}
           validationSchema={loginSchema}
           onSubmit={handleSubmit}
         >
@@ -88,7 +111,7 @@ console.log(response.accessToken,'response.data')
                   name="email"
                   className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300"
                   placeholder="you@example.com"
-                  disabled={isSubmitting || loading}
+                  disabled={isSubmitting || signInLoading}
                 />
                 <ErrorMessage
                   name="email"
@@ -109,7 +132,7 @@ console.log(response.accessToken,'response.data')
                   name="password"
                   className="w-full px-4 py-3 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:border-white focus:ring-1 focus:ring-white transition-all duration-300"
                   placeholder="••••••••"
-                  disabled={isSubmitting || loading}
+                  disabled={isSubmitting || signInLoading}
                 />
                 <ErrorMessage
                   name="password"
@@ -118,24 +141,20 @@ console.log(response.accessToken,'response.data')
                 />
               </div>
 
-              {authError && (
-                <div className="mb-4 text-red-500 text-sm text-center">
-                  {authError.message || 'Login failed. Please try again.'}
-                </div>
-              )}
+
 
               <button
                 type="submit"
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
                 className="w-full bg-white text-black py-3 px-4 rounded-lg font-semibold transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg relative overflow-hidden disabled:opacity-50"
-                disabled={isSubmitting || loading}
+                disabled={isSubmitting || signInLoading}
               >
                 <span className="relative z-10">
-                  {isSubmitting || loading ? 'Logging in...' : 'Login'}
+                  {isSubmitting || signInLoading ? 'Logging in...' : 'Login'}
                 </span>
                 <span
-                  className={`absolute inset-0 bg-gray-200 transform scale-x-0 origin-left transition-transform duration-300 ${isHovered && !(isSubmitting || loading) ? 'scale-x-100' : ''
+                  className={`absolute inset-0 bg-gray-200 transform scale-x-0 origin-left transition-transform duration-300 ${isHovered && !(isSubmitting || signInLoading) ? 'scale-x-100' : ''
                     }`}
                 />
               </button>

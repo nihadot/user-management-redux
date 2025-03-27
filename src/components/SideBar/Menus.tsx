@@ -1,11 +1,12 @@
-import { FaAdversal, FaBlog, FaCity, FaItunes, FaLanguage, FaLongArrowAltUp, FaMeteor, FaNewspaper, FaProjectDiagram, FaRProject, FaSignOutAlt, FaUsers, FaVideo } from "react-icons/fa";
-import { FaChevronDown, FaChevronRight } from "react-icons/fa6";
+import {  FaMeteor,  FaRProject, FaSignOutAlt, } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa6";
 import clsx from "clsx";
 import { useLocation, useNavigate } from "react-router";
 import { JSX, useState } from "react";
 import { motion } from "framer-motion";
 import { useDispatch } from "react-redux";
-import { logoutStart, logoutSuccess, signInFailure, signInStart, signInSuccess } from "../../redux/slices/adminSlice";
+import { logoutStart, logoutSuccess, signInFailure } from "../../redux/slices/adminSlice";
+import { logoutAuth } from "../../services/adminApi";
 
 type MenuItem = {
     id: number;
@@ -18,7 +19,7 @@ type MenuItem = {
 // Define menu items
 const menuItems: MenuItem[] = [
     { id: 1, link: "/admin/manage-users", name: "Manage Users", icon: <FaRProject /> },
-    { id: 2, link: "/profile", name: "Profile", icon: <FaMeteor /> },
+    { id: 2, link: "/admin/profile", name: "Profile", icon: <FaMeteor /> },
 
 ];
 
@@ -36,17 +37,15 @@ const Menus = () => {
 
 
     const handleLogout = async () => {
+        dispatch(logoutStart());
         try {
 
-            dispatch(logoutStart());
-
+            await logoutAuth();
             dispatch(logoutSuccess());
 
-            navigate("/login"); // ✅ Redirect after successful logout
-        } catch (error) {
-            dispatch(signInFailure(data.message));
-
-            console.error("Logout failed:", error);
+            navigate("/admin-login"); 
+        } catch (error:any) {
+            dispatch(signInFailure(error.message));
         }
     };
 

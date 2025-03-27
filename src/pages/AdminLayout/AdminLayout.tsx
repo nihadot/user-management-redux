@@ -1,40 +1,46 @@
-import { Navigate, Outlet, useNavigate } from 'react-router';
+import { Outlet, useNavigate } from 'react-router';
 import { SideBar } from '../../components';
-import { useProtectRouteQuery } from '../../features/auth/authApi';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useEffect } from 'react';
-import { checkUserLoggedIn } from '../../redux/slices/authSlice';
-import { RootState } from '../../redux/store';
+import { isLoggedAPIAdmin } from '../../services/adminApi';
+import {
+    protectedRouteFailure,
+    protectedRouteStart,
+    protectedRouteSuccess
+} from '../../redux/slices/adminSlice';
 
 type Props = {};
 
-function AdminLayout({}: Props) {
+function AdminLayout({ }: Props) {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
+    useEffect(() => {
+
+        isLogged()
+
+    }, []);
     
-        const { isAuthenticated, loading } = useSelector((state: RootState) => state.admin);
-        const navigate = useNavigate();
-    
- 
-     useEffect(() => {
-        console.log(isAuthenticated,'isAuthenticatedisAuthenticatedisAuthenticated')
-        
-                if (!isAuthenticated) {
-                    navigate('/admin-login'); // Redirect to login if not authenticated
-                }
-        
-        }, [isAuthenticated, loading, navigate]);
-    
+    const isLogged = async () => {
+        dispatch(protectedRouteStart())
+        try {
+            await isLoggedAPIAdmin();
+            dispatch(protectedRouteSuccess())
+        } catch (error: any) {
+            dispatch(protectedRouteFailure(error))
+            navigate('/admin-login');
+        }
+    }
+
     return (
         <>
-           
-                <main className="flex min-h-screen max-w-[1440px] w-full">
-                    <SideBar />
+            <main className="flex min-h-screen max-w-[1440px] w-full">
+                <SideBar />
 
-                    <div className="flex-1 border border-slate-200 rounded-t-lg md:ms-[240px] ms-[60px] md:mt-3 overflow-x-auto">
-                        <Outlet />
-                    </div>
-                </main>
-           
+                <div className="flex-1 border border-slate-200 rounded-t-lg md:ms-[240px] ms-[60px] md:mt-3 overflow-x-auto">
+                    <Outlet />
+                </div>
+            </main>
         </>
     );
 }

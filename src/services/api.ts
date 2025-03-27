@@ -38,7 +38,7 @@ export const loginUser = async (credentials: void) => {
 };
 
 
-export const signupUser = async (credentials: void) => {
+export const signUpUser = async (credentials: void) => {
   const response = await api.post('/auth/user/signup', credentials);
   return response;
 };
@@ -50,8 +50,10 @@ export const checkAuth = async () => {
 
 
 export const logoutAuth = async () => {
-  const response = await api.post(`${apiUrl}auth/user/logout`);
+  const response = await api.get(`${apiUrl}auth/user/logout`);
   return response;
 };
+
+
 
 export default api;

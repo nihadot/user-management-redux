@@ -1,5 +1,4 @@
 import { FaArrowRight } from "react-icons/fa";
-import { FaArrowRightArrowLeft } from "react-icons/fa6";
 import { Link } from "react-router";
 
 type BreadcrumbItem = {

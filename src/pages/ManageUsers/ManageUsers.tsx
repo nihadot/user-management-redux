@@ -25,18 +25,18 @@ function index({ }: Props) {
             label: 'Manage Users',
             link: '/admin/users/list'
         },
-        ]
+    ]
 
 
     const [breadcrumbs] = useState([
-        { link: "/dashboard", title: "Home" },
-        { link: "/manage-ads", title: "Manage Ads" },
+        { link: "/admin/manage-users", title: "Home" },
+        { link: "/admin/manage-users", title: "Manage Ads" },
     ]);
 
     return (
         <div className='p-2 md:p-4 '>
             <Breadcrumb items={breadcrumbs} />
-            <p className='text-lg text-[#141824] mt-4 pb-4 font-medium '>Manage Ads</p>
+            <p className='text-lg text-[#141824] mt-4 pb-4 font-medium '>Manage Users</p>
 
             <div className="grid grid-cols-4 gap-4">
 

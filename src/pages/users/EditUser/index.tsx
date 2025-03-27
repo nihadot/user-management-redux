@@ -7,17 +7,17 @@ type Props = {}
 function index({ }: Props) {
 
     const [breadcrumbs] = useState([
-        { link: "/dashboard", title: "Home" },
-        { link: "/agencies", title: "Agencies" },
-        { link: "#", title: "Add Agencies" },
+        { link: "/admin", title: "Home" },
+        { link: "/admin/manage-users", title: "Manage Users" },
+        { link: "#", title: "Edit User" },
     ]);
 
     return (
-        <section className='max-w-md p-4'>
+        <section className='p-4'>
             <Breadcrumb items={breadcrumbs} />
-            <p className='text-lg text-[#141824] mt-4 pb-4 font-medium '>Add Agencies</p> 
+            <p className='text-lg text-[#141824] mt-4 pb-4 font-medium '>Add Users</p>
 
-            <AddUserForm/>
+            <AddUserForm />
         </section>
     )
 }
